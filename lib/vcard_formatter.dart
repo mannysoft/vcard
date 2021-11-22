@@ -11,7 +11,7 @@ class VCardFormatter {
   /// Encode string
   /// @param  {String}     value to encode
   /// @return {String}     encoded string
-  String e(String value) {
+  String e(String? value) {
     if ((value != null) && (value.isNotEmpty)) {
 //      if (value is String) {
 //        value = '' + value;
@@ -36,7 +36,8 @@ class VCardFormatter {
   /// @param  {String} mediaType       Media-type of photo (JPEG, PNG, GIF)
   /// @param  {String} isBase64        Whether or not is Base64 format
   /// @return {String}                 Formatted photo
-  String getFormattedPhoto(String photoType, String url, String mediaType, bool isBase64) {
+  String getFormattedPhoto(
+      String photoType, String url, String mediaType, bool isBase64) {
     String params;
 
     if (majorVersion >= 4) {
@@ -58,7 +59,7 @@ class VCardFormatter {
   /// @param {String}         Encoding prefix encodingPrefix
   /// @return {String}         Formatted address
   String getFormattedAddress(
-      {@required MailingAddress address, @required String encodingPrefix}) {
+      {required MailingAddress address, required String encodingPrefix}) {
     var formattedAddress = '';
 
     if (address.label.isNotEmpty ||
@@ -132,16 +133,17 @@ class VCardFormatter {
     formattedVCardString += 'VERSION:' + vCard.version + nl();
 
     String encodingPrefix = majorVersion >= 4 ? '' : ';CHARSET=UTF-8';
-    String formattedName = vCard.formattedName;
+    String? formattedName = vCard.formattedName;
 
     if (formattedName == null) {
       formattedName = '';
 
       [vCard.firstName, vCard.middleName, vCard.lastName].forEach((name) {
-        if ((name.isNotEmpty) && (formattedName.isNotEmpty)) {
-          formattedName += ' ';
+        if ((name.isNotEmpty) && (formattedName!.isNotEmpty)) {
+          formattedName = '$formattedName' + ' ';
         }
-        formattedName += name;
+        //formattedName += name;
+        formattedName = '$formattedName' + '$name';
       });
     }
 
@@ -161,7 +163,7 @@ class VCardFormatter {
         e(vCard.nameSuffix) +
         nl();
 
-    if ((vCard.nickname != null) && (majorVersion >= 3)) {
+    if ((vCard.nickname.isNotEmpty) && (majorVersion >= 3)) {
       formattedVCardString +=
           'NICKNAME' + encodingPrefix + ':' + e(vCard.nickname) + nl();
     }
@@ -176,12 +178,12 @@ class VCardFormatter {
     }
 
     if (vCard.birthday != null) {
-      formattedVCardString += 'BDAY:' + formatVCardDate(vCard.birthday) + nl();
+      formattedVCardString += 'BDAY:' + formatVCardDate(vCard.birthday!) + nl();
     }
 
     if ((vCard.anniversary != null) && (majorVersion >= 4)) {
       formattedVCardString +=
-          'ANNIVERSARY:' + formatVCardDate(vCard.anniversary) + nl();
+          'ANNIVERSARY:' + formatVCardDate(vCard.anniversary!) + nl();
     }
 
     if (vCard.email != null) {
@@ -249,12 +251,12 @@ class VCardFormatter {
 
     if (vCard.logo.url != null) {
       formattedVCardString += getFormattedPhoto(
-          'LOGO', vCard.logo.url, vCard.logo.mediaType, vCard.logo.isBase64);
+          'LOGO', vCard.logo.url!, vCard.logo.mediaType!, vCard.logo.isBase64!);
     }
 
     if (vCard.photo.url != null) {
-      formattedVCardString += getFormattedPhoto('PHOTO', vCard.photo.url,
-          vCard.photo.mediaType, vCard.photo.isBase64);
+      formattedVCardString += getFormattedPhoto('PHOTO', vCard.photo.url!,
+          vCard.photo.mediaType!, vCard.photo.isBase64!);
     }
 
     if (vCard.cellPhone != null) {
@@ -392,19 +394,17 @@ class VCardFormatter {
           'NOTE' + encodingPrefix + ':' + e(vCard.note) + nl();
     }
 
-    if (vCard.socialUrls != null) {
-      vCard.socialUrls.forEach((key, value) {
-        if ((value != null) && (value.isNotEmpty)) {
-          formattedVCardString += 'X-SOCIALPROFILE' +
-              encodingPrefix +
-              ';TYPE=' +
-              key +
-              ':' +
-              e(vCard.socialUrls[key]) +
-              nl();
-        }
-      });
-    }
+    vCard.socialUrls.forEach((key, value) {
+      if ((value != null) && (value.isNotEmpty)) {
+        formattedVCardString += 'X-SOCIALPROFILE' +
+            encodingPrefix +
+            ';TYPE=' +
+            key +
+            ':' +
+            e(vCard.socialUrls[key]) +
+            nl();
+      }
+    });
 
     if (vCard.source != null) {
       formattedVCardString +=
